@@ -1,0 +1,37 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+        update_cache: yes
+
+    - name: Install Docker Compose
+      get_url:
+        url: https://github.com/docker/compose/releases/download/v2.1.1/docker-compose-linux-x86_64
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+
+    - name: Clone the application repository
+      git:
+        repo: 'https://github.com/ajalaadetola/DevOps-Stage-4.git'
+        dest: /app
+        version: main
+
+    - name: Copy docker-compose.yml
+      copy:
+        src: /app/docker-compose.yml
+        dest: /app/docker-compose.yml
+
+    - name: Create letsencrypt directory
+      file:
+        path: /app/letsencrypt
+        state: directory
+        mode: '0755'
+
+    - name: Start Docker Compose
+      command: docker-compose up -d
+      args:
+        chdir: /app
